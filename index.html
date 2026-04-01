@@ -7,344 +7,197 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f0f0f;
-    --surface: #1a1a1a;
-    --surface2: #222;
-    --border: #2e2e2e;
-    --accent: #e8ff3c;
-    --accent2: #3cffb4;
-    --text: #f0f0f0;
-    --muted: #666;
-    --done-bg: #111;
-    --done-text: #444;
-    --red: #ff4444;
-    --tag-bg: #252525;
+    --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #222;
+    --border: #2e2e2e; --accent: #e8ff3c; --accent2: #3cffb4;
+    --text: #f0f0f0; --muted: #666; --done-bg: #111; --done-text: #444;
+    --red: #ff4444; --tag-bg: #252525; --orange: #ffaa3c;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'IBM Plex Sans', sans-serif;
-    min-height: 100vh;
-    padding-bottom: 40px;
-  }
-  header {
-    padding: 24px 20px 16px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    position: sticky;
-    top: 0;
-    background: var(--bg);
-    z-index: 100;
-  }
-  .logo {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 18px;
-    font-weight: 600;
-    letter-spacing: -0.5px;
-  }
+  body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; min-height: 100vh; padding-bottom: 60px; }
+
+  /* SETUP */
+  #setupScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 32px 20px; text-align: center; }
+  .setup-logo { font-family: 'IBM Plex Mono', monospace; font-size: 28px; font-weight: 600; margin-bottom: 8px; }
+  .setup-logo span { color: var(--accent); }
+  .setup-sub { color: var(--muted); font-size: 13px; margin-bottom: 40px; }
+  .setup-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px 24px; width: 100%; max-width: 540px; text-align: left; }
+  .setup-card h2 { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--accent); margin-bottom: 20px; letter-spacing: 1px; text-transform: uppercase; }
+  .setup-step { display: flex; gap: 14px; margin-bottom: 16px; align-items: flex-start; }
+  .step-num { font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; color: #000; background: var(--accent); width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .step-text { font-size: 13px; line-height: 1.65; color: var(--text); }
+  .step-text a { color: var(--accent2); text-decoration: none; }
+  .step-text a:hover { text-decoration: underline; }
+  .step-text code { font-family: 'IBM Plex Mono', monospace; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 3px; font-size: 11px; color: var(--accent); word-break: break-all; }
+  .setup-divider { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
+  .setup-input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .setup-label { font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .setup-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 13px; font-family: 'IBM Plex Mono', monospace; outline: none; transition: border-color 0.15s; width: 100%; }
+  .setup-input:focus { border-color: var(--accent); }
+  .setup-input::placeholder { color: var(--muted); }
+  .setup-btn { width: 100%; padding: 12px; background: var(--accent); color: #000; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; font-family: 'IBM Plex Sans', sans-serif; cursor: pointer; margin-top: 10px; transition: opacity 0.15s; }
+  .setup-btn:hover { opacity: 0.85; }
+  .setup-btn:disabled { opacity: 0.5; cursor: default; }
+  .setup-error { color: var(--red); font-size: 12px; margin-top: 8px; display: none; }
+
+  /* MAIN */
+  #app { display: none; }
+  header { padding: 20px 20px 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 100; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-bottom: 14px; }
+  .logo { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 600; }
   .logo span { color: var(--accent); }
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .counter {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    color: var(--muted);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 4px 10px;
-    border-radius: 4px;
-  }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); display: inline-block; margin-left: 8px; transition: background 0.3s; }
+  .sync-dot.ok { background: var(--accent2); }
+  .sync-dot.syncing { background: var(--orange); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+  .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .counter { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); padding: 4px 10px; border-radius: 4px; }
   .counter .num { color: var(--accent); font-weight: 600; }
-  .tabs {
-    display: flex;
-    gap: 2px;
-    padding: 0 20px;
-    margin-top: 16px;
-    border-bottom: 1px solid var(--border);
-  }
-  .tab {
-    padding: 8px 16px;
-    font-size: 13px;
-    font-family: 'IBM Plex Mono', monospace;
-    cursor: pointer;
-    border: none;
-    background: none;
-    color: var(--muted);
-    border-bottom: 2px solid transparent;
-    transition: all 0.15s;
-    margin-bottom: -1px;
-  }
+  .add-btn { padding: 8px 16px; background: var(--accent); color: #000; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; font-family: 'IBM Plex Sans', sans-serif; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+  .add-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .filter-bar { display: flex; gap: 8px; padding: 10px 0 0; flex-wrap: wrap; align-items: center; }
+  .filter-label { font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--muted); }
+  .filter-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 6px; font-size: 13px; font-family: 'IBM Plex Mono', monospace; outline: none; transition: border-color 0.15s; width: 190px; }
+  .filter-input:focus { border-color: var(--accent); }
+  .filter-input::placeholder { color: var(--muted); }
+  .filter-clear { padding: 6px 10px; background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; cursor: pointer; display: none; transition: color 0.15s; }
+  .filter-clear:hover { color: var(--text); }
+  .filter-badge { font-family: 'IBM Plex Mono', monospace; font-size: 11px; background: #1c1f00; border: 1px solid var(--accent); color: var(--accent); padding: 3px 8px; border-radius: 4px; display: none; }
+  .tabs { display: flex; gap: 2px; padding-top: 12px; }
+  .tab { padding: 8px 16px; font-size: 13px; font-family: 'IBM Plex Mono', monospace; cursor: pointer; border: none; background: none; color: var(--muted); border-bottom: 2px solid transparent; transition: all 0.15s; margin-bottom: -1px; }
   .tab:hover { color: var(--text); }
   .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .content { padding: 16px 20px; max-width: 900px; margin: 0 auto; }
-  .add-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 16px;
-    background: var(--accent);
-    color: #000;
-    border: none;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: 'IBM Plex Sans', sans-serif;
-    cursor: pointer;
-    transition: opacity 0.15s, transform 0.1s;
-  }
-  .add-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-  .add-btn:active { transform: translateY(0); }
+  .content { padding: 16px 20px; max-width: 960px; margin: 0 auto; }
+  .results-info { font-size: 12px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; margin-bottom: 10px; display: none; }
+  .results-info b { color: var(--orange); }
 
   /* MODAL */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 200;
-    justify-content: center;
-    align-items: flex-end;
-    padding: 0;
-  }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; justify-content: center; align-items: flex-end; }
   .modal-overlay.show { display: flex; }
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px 16px 0 0;
-    padding: 24px 20px 32px;
-    width: 100%;
-    max-width: 600px;
-    animation: slideUp 0.25s ease;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-  @keyframes slideUp {
-    from { transform: translateY(40px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-  .modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-  }
-  .modal-title {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 15px;
-    font-weight: 600;
-  }
-  .modal-close {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: color 0.15s;
-  }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px 16px 0 0; padding: 24px 20px 36px; width: 100%; max-width: 620px; animation: slideUp 0.25s ease; max-height: 92vh; overflow-y: auto; }
+  @keyframes slideUp { from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1} }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .modal-title { font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600; }
+  .modal-close { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); width: 28px; height: 28px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color 0.15s; }
   .modal-close:hover { color: var(--text); }
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .form-group { display: flex; flex-direction: column; gap: 5px; }
   .form-group.full { grid-column: 1 / -1; }
-  label {
-    font-size: 11px;
-    font-family: 'IBM Plex Mono', monospace;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  input, textarea {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 9px 12px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-family: 'IBM Plex Sans', sans-serif;
-    outline: none;
-    transition: border-color 0.15s;
-    width: 100%;
-  }
-  input:focus, textarea:focus { border-color: var(--accent); }
-  textarea { resize: vertical; min-height: 70px; }
-  .form-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-  }
-  .btn-primary {
-    flex: 1;
-    padding: 11px;
-    background: var(--accent);
-    color: #000;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: 'IBM Plex Sans', sans-serif;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
+  label { font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  input[type=text], input[type=date], textarea { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 9px 12px; border-radius: 6px; font-size: 14px; font-family: 'IBM Plex Sans', sans-serif; outline: none; transition: border-color 0.15s; width: 100%; }
+  input[type=text]:focus, input[type=date]:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 65px; }
+  .field-hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .form-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-primary { flex: 1; padding: 11px; background: var(--accent); color: #000; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; font-family: 'IBM Plex Sans', sans-serif; cursor: pointer; transition: opacity 0.15s; }
   .btn-primary:hover { opacity: 0.85; }
-  .btn-cancel {
-    padding: 11px 20px;
-    background: none;
-    color: var(--muted);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 14px;
-    font-family: 'IBM Plex Sans', sans-serif;
-    cursor: pointer;
-    transition: color 0.15s;
-  }
+  .btn-primary:disabled { opacity: 0.5; cursor: default; }
+  .btn-cancel { padding: 11px 20px; background: none; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; font-size: 14px; font-family: 'IBM Plex Sans', sans-serif; cursor: pointer; transition: color 0.15s; }
   .btn-cancel:hover { color: var(--text); }
 
-  /* LIST */
+  /* ITEMS */
   .item-list { display: flex; flex-direction: column; gap: 8px; }
-  .item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 14px;
-    align-items: start;
-    transition: border-color 0.2s, background 0.2s;
-    position: relative;
-  }
+  .item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: start; transition: border-color 0.2s; }
   .item:hover { border-color: #3a3a3a; }
-  .item.done {
-    background: var(--done-bg);
-    border-color: #1e1e1e;
-    opacity: 0.6;
-  }
-  .check-btn {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    border: 2px solid var(--border);
-    background: none;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    margin-top: 2px;
-    transition: all 0.2s;
-    color: transparent;
-    font-size: 12px;
-  }
+  .item.done { background: var(--done-bg); border-color: #1e1e1e; opacity: 0.55; }
+  .check-btn { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; transition: all 0.2s; color: transparent; font-size: 12px; }
   .check-btn:hover { border-color: var(--accent2); }
-  .item.done .check-btn {
-    border-color: var(--accent2);
-    background: var(--accent2);
-    color: #000;
-  }
-  .item-body { min-width: 0; }
-  .item-art {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1.3;
-    margin-bottom: 6px;
-  }
+  .item.done .check-btn { border-color: var(--accent2); background: var(--accent2); color: #000; }
+  .item-art { font-size: 14px; font-weight: 500; line-height: 1.3; margin-bottom: 7px; }
   .item.done .item-art { text-decoration: line-through; color: var(--done-text); }
-  .item-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    align-items: center;
-  }
-  .tag {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    background: var(--tag-bg);
-    border: 1px solid var(--border);
-    padding: 2px 7px;
-    border-radius: 4px;
-    color: var(--muted);
-  }
+  .item-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .tag { font-family: 'IBM Plex Mono', monospace; font-size: 11px; background: var(--tag-bg); border: 1px solid var(--border); padding: 2px 7px; border-radius: 4px; color: var(--muted); }
   .tag.prov { color: #7eb8ff; border-color: #1e3a5f; background: #0d1e30; }
   .tag.code { color: var(--accent); border-color: #3a3e00; background: #1c1f00; }
   .tag.date { color: var(--accent2); border-color: #003a28; background: #001a12; }
-  .item-comment {
-    margin-top: 6px;
-    font-size: 12px;
-    color: var(--muted);
-    font-style: italic;
-  }
+  .tag.pedido { color: var(--orange); border-color: #3a2800; background: #1f1500; cursor: pointer; transition: background 0.15s; }
+  .tag.pedido:hover { background: #2a1c00; }
+  .tag.pedido.hl { background: #3a2800; border-color: var(--orange); box-shadow: 0 0 0 1px var(--orange); }
+  .item-comment { margin-top: 6px; font-size: 12px; color: var(--muted); font-style: italic; }
   .item-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
-  .del-btn {
-    width: 28px; height: 28px;
-    background: none;
-    border: none;
-    color: var(--border);
-    cursor: pointer;
-    font-size: 15px;
-    border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
-    transition: color 0.15s, background 0.15s;
-    flex-shrink: 0;
-  }
-  .del-btn:hover { color: var(--red); background: rgba(255,68,68,0.1); }
-  .done-badge {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--accent2);
-    background: #001a12;
-    border: 1px solid #003a28;
-    padding: 2px 6px;
-    border-radius: 4px;
-    white-space: nowrap;
-  }
-  .empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--muted);
-    font-size: 13px;
-  }
+  .del-btn { width: 28px; height: 28px; background: none; border: none; color: var(--border); cursor: pointer; font-size: 15px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: color 0.15s, background 0.15s; }
+  .del-btn:hover { color: var(--red); background: rgba(255,68,68,0.08); }
+  .done-badge { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent2); background: #001a12; border: 1px solid #003a28; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+  .empty { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 13px; }
   .empty .icon { font-size: 36px; margin-bottom: 10px; }
 
-  @media (max-width: 500px) {
+  @media (max-width: 520px) {
     .form-grid { grid-template-columns: 1fr; }
     .form-group.full { grid-column: 1; }
-    header { padding: 16px; }
-    .content { padding: 12px 16px; }
+    header { padding: 14px 16px 0; }
+    .content { padding: 12px 14px; }
     .item { padding: 12px; gap: 10px; }
+    .filter-input { width: 150px; }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo"><span>//</span> FALTANTES</div>
-  <div class="header-right">
-    <div class="counter" id="counter"><span class="num" id="pendCount">0</span> pendientes</div>
-    <button class="add-btn" onclick="openModal()">+ Agregar</button>
-  </div>
-</header>
-
-<div style="padding: 0 20px; max-width: 900px; margin: 0 auto;">
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('pending', this)">Pendientes</button>
-    <button class="tab" onclick="switchTab('done', this)">Finalizados</button>
-    <button class="tab" onclick="switchTab('all', this)">Todos</button>
+<!-- SETUP SCREEN -->
+<div id="setupScreen">
+  <div class="setup-logo"><span>//</span> FALTANTES</div>
+  <div class="setup-sub">Configurá Firebase para sincronizar datos entre todos tus dispositivos</div>
+  <div class="setup-card">
+    <h2>// Configuración de Firebase (solo primera vez)</h2>
+    <div class="setup-step">
+      <div class="step-num">1</div>
+      <div class="step-text">Entrá a <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> con tu cuenta Google y creá un proyecto nuevo (ej. <code>faltantes-app</code>). Podés desactivar Google Analytics.</div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">2</div>
+      <div class="step-text">Dentro del proyecto, hacé click en el ícono <code>&lt;/&gt;</code> (Web), dale un nombre a la app y registrala. En la pantalla que sigue verás un objeto <code>firebaseConfig</code> — copiá el <strong>apiKey</strong> y el <strong>projectId</strong>.</div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">3</div>
+      <div class="step-text">En el menú izquierdo → <strong>Firestore Database</strong> → <strong>Crear base de datos</strong> → modo <strong>producción</strong> → región <code>us-central1</code> → Listo.</div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">4</div>
+      <div class="step-text">En Firestore → pestaña <strong>Reglas</strong>, pegá esto y publicá:<br>
+        <code>rules_version = '2'; service cloud.firestore { match /databases/{database}/documents { match /{document=**} { allow read, write: if true; } } }</code>
+      </div>
+    </div>
+    <hr class="setup-divider">
+    <div class="setup-input-group">
+      <div class="setup-label">API Key</div>
+      <input class="setup-input" id="cfgApiKey" type="text" placeholder="AIzaSy...">
+    </div>
+    <div class="setup-input-group">
+      <div class="setup-label">Project ID</div>
+      <input class="setup-input" id="cfgProjectId" type="text" placeholder="faltantes-app">
+    </div>
+    <div id="setupError" class="setup-error"></div>
+    <button class="setup-btn" id="setupBtn" onclick="connectFirebase()">Conectar y continuar →</button>
   </div>
 </div>
 
-<div class="content">
-  <div class="item-list" id="itemList"></div>
+<!-- MAIN APP -->
+<div id="app">
+  <header>
+    <div class="header-top">
+      <div class="logo"><span>//</span> FALTANTES <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-right">
+        <div class="counter"><span class="num" id="pendCount">0</span> pendientes</div>
+        <button class="add-btn" onclick="openModal()">+ Agregar</button>
+      </div>
+    </div>
+    <div style="max-width:960px;margin:0 auto">
+      <div class="filter-bar">
+        <span class="filter-label">🔍 Filtrar por pedido:</span>
+        <input class="filter-input" id="filterInput" type="text" placeholder="Nro de pedido..." oninput="onFilterInput(this.value)">
+        <button class="filter-clear" id="filterClear" onclick="clearFilter()">✕ Limpiar</button>
+        <div class="filter-badge" id="filterBadge"></div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('pending',this)">Pendientes</button>
+        <button class="tab" onclick="switchTab('done',this)">Finalizados</button>
+        <button class="tab" onclick="switchTab('all',this)">Todos</button>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+    <div id="resultsInfo" class="results-info"></div>
+    <div class="item-list" id="itemList"></div>
+  </div>
 </div>
 
 <!-- MODAL -->
@@ -372,150 +225,198 @@
         <input type="text" id="fProveedor" placeholder="Nombre del proveedor">
       </div>
       <div class="form-group full">
+        <label>Pedidos Afectados</label>
+        <input type="text" id="fPedidos" placeholder="EJ: 1023, 1045, 1102">
+        <div class="field-hint">Separar con comas si son varios números de pedido</div>
+      </div>
+      <div class="form-group full">
         <label>Comentario</label>
         <textarea id="fComentario" placeholder="Notas adicionales..."></textarea>
       </div>
     </div>
     <div class="form-actions">
       <button class="btn-cancel" onclick="closeModalDirect()">Cancelar</button>
-      <button class="btn-primary" onclick="saveItem()">Guardar artículo</button>
+      <button class="btn-primary" id="saveBtn" onclick="saveItem()">Guardar artículo</button>
     </div>
   </div>
 </div>
 
-<script>
-const SEED = [
-  { id: 1, fecha: '2026-03-01', codigo: 'EH002-0096A', articulo: 'TIRADOR ALUMINIO EH002-0096A - 096mm + 2 tor - T2', proveedor: 'Placasur', comentario: '', done: false, doneDate: null },
-  { id: 2, fecha: '2026-04-01', codigo: 'EHM61213', articulo: 'MANGUITO METALICO M06 Diam 8 x 13mm', proveedor: 'Placasur', comentario: '', done: false, doneDate: null },
-  { id: 3, fecha: '2026-04-01', codigo: 'EHCF226NI', articulo: 'CERRADURA CAJONERA 0600mm', proveedor: 'Placasur', comentario: '', done: false, doneDate: null },
-  { id: 4, fecha: '2026-04-01', codigo: 'EHCE1924NI', articulo: 'CERRADURA EMPUJE-GABINETE', proveedor: 'Placasur', comentario: '', done: false, doneDate: null },
-  { id: 5, fecha: '2026-04-01', codigo: 'EHM61011', articulo: 'TARUGO PLASTICO M6 10 x 11/13', proveedor: 'Placasur', comentario: '', done: false, doneDate: null },
-  { id: 6, fecha: '2026-04-01', codigo: '', articulo: 'Baltico SPC 25mm', proveedor: 'DAC', comentario: '', done: false, doneDate: null },
-  { id: 7, fecha: '2026-04-01', codigo: '', articulo: 'Roble Am. 25mm', proveedor: 'DAC', comentario: '', done: false, doneDate: null },
-  { id: 8, fecha: '2026-04-01', codigo: 'BRZ-1162', articulo: 'CERRADURA DIGITAL - BRZ-1162', proveedor: 'bronzen', comentario: '', done: false, doneDate: null },
-];
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-let items = [];
-let nextId = 100;
-let currentTab = 'pending';
-let editId = null;
+let db, items = [], currentTab = 'pending', editId = null, filterPedido = '';
 
-function load() {
+function setSyncDot(s) {
+  const d = document.getElementById('syncDot');
+  d.className = 'sync-dot' + (s==='ok'?' ok':s==='syncing'?' syncing':'');
+}
+function fmtDate(d) { if(!d) return ''; const [y,m,dd]=d.split('-'); return `${dd}/${m}/${y}`; }
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function parsePedidos(str) { return (str||'').split(',').map(s=>s.trim()).filter(Boolean); }
+
+function startApp(firebaseDb) {
+  db = firebaseDb;
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  setSyncDot('syncing');
+  onSnapshot(collection(db,'faltantes'), snap => {
+    items = snap.docs.map(d=>({_id:d.id,...d.data()}));
+    items.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    setSyncDot('ok');
+    render();
+  }, ()=>setSyncDot(''));
+}
+
+window.connectFirebase = async function() {
+  const apiKey = document.getElementById('cfgApiKey').value.trim();
+  const projectId = document.getElementById('cfgProjectId').value.trim();
+  const errEl = document.getElementById('setupError');
+  const btn = document.getElementById('setupBtn');
+  errEl.style.display = 'none';
+  if (!apiKey || !projectId) { errEl.textContent='⚠ Completá ambos campos.'; errEl.style.display='block'; return; }
+  btn.textContent = 'Conectando...'; btn.disabled = true;
   try {
-    const s = localStorage.getItem('faltantes_v2');
-    if (s) { const d = JSON.parse(s); items = d.items; nextId = d.nextId || 100; }
-    else { items = JSON.parse(JSON.stringify(SEED)); save(); }
-  } catch(e) { items = JSON.parse(JSON.stringify(SEED)); }
-}
-function save() {
-  try { localStorage.setItem('faltantes_v2', JSON.stringify({ items, nextId })); } catch(e) {}
-}
-function fmtDate(d) {
-  if (!d) return '';
-  const [y,m,dd] = d.split('-');
-  return `${dd}/${m}/${y}`;
-}
-function todayStr() {
-  return new Date().toISOString().slice(0,10);
-}
+    const app = initializeApp({ apiKey, projectId, authDomain:`${projectId}.firebaseapp.com` });
+    const firebaseDb = getFirestore(app);
+    localStorage.setItem('fb_cfg', JSON.stringify({apiKey, projectId}));
+    startApp(firebaseDb);
+  } catch(e) {
+    errEl.textContent = '⚠ Error: ' + e.message; errEl.style.display = 'block';
+    btn.textContent = 'Conectar y continuar →'; btn.disabled = false;
+  }
+};
+
 function render() {
-  const list = document.getElementById('itemList');
-  let data = items;
-  if (currentTab === 'pending') data = items.filter(i => !i.done);
-  if (currentTab === 'done') data = items.filter(i => i.done);
+  let data = [...items];
+  if (currentTab==='pending') data = data.filter(i=>!i.done);
+  if (currentTab==='done')    data = data.filter(i=>i.done);
+  if (filterPedido) {
+    const q = filterPedido.toLowerCase();
+    data = data.filter(i => parsePedidos(i.pedidos).some(p=>p.toLowerCase().includes(q)));
+  }
   document.getElementById('pendCount').textContent = items.filter(i=>!i.done).length;
-  if (data.length === 0) {
-    list.innerHTML = `<div class="empty"><div class="icon">${currentTab==='done'?'✅':'📋'}</div><div>${currentTab==='done'?'Sin artículos finalizados':'Sin artículos pendientes'}</div></div>`;
+  const info = document.getElementById('resultsInfo');
+  if (filterPedido) {
+    info.style.display = 'block';
+    info.innerHTML = `Mostrando <b>${data.length}</b> resultado${data.length!==1?'s':''} para pedido "<b>${filterPedido}</b>"`;
+  } else { info.style.display = 'none'; }
+
+  const list = document.getElementById('itemList');
+  if (!data.length) {
+    const msg = filterPedido ? 'Sin artículos con ese número de pedido' : currentTab==='done' ? 'Sin artículos finalizados' : 'Sin artículos pendientes';
+    const icon = filterPedido ? '🔍' : currentTab==='done' ? '✅' : '📋';
+    list.innerHTML = `<div class="empty"><div class="icon">${icon}</div><div>${msg}</div></div>`;
     return;
   }
-  list.innerHTML = data.map(item => `
-    <div class="item${item.done?' done':''}" id="item-${item.id}">
-      <button class="check-btn" onclick="toggleDone(${item.id})" title="${item.done?'Marcar pendiente':'Marcar resuelto'}">
-        ${item.done ? '✓' : ''}
-      </button>
+  list.innerHTML = data.map(item => {
+    const peds = parsePedidos(item.pedidos);
+    const pedTags = peds.map(p => {
+      const hl = filterPedido && p.toLowerCase().includes(filterPedido.toLowerCase()) ? ' hl' : '';
+      return `<span class="tag pedido${hl}" onclick="setFilter('${p.replace(/'/g,"\\'")}')">📦 ${p}</span>`;
+    }).join('');
+    return `
+    <div class="item${item.done?' done':''}">
+      <button class="check-btn" onclick="toggleDone('${item._id}')">${item.done?'✓':''}</button>
       <div class="item-body">
-        <div class="item-art">${item.articulo || '—'}</div>
+        <div class="item-art">${item.articulo||'—'}</div>
         <div class="item-meta">
-          ${item.fecha ? `<span class="tag date">📅 ${fmtDate(item.fecha)}</span>` : ''}
-          ${item.proveedor ? `<span class="tag prov">${item.proveedor}</span>` : ''}
-          ${item.codigo ? `<span class="tag code">${item.codigo}</span>` : ''}
+          ${item.fecha?`<span class="tag date">📅 ${fmtDate(item.fecha)}</span>`:''}
+          ${item.proveedor?`<span class="tag prov">${item.proveedor}</span>`:''}
+          ${item.codigo?`<span class="tag code">${item.codigo}</span>`:''}
+          ${pedTags}
         </div>
-        ${item.comentario ? `<div class="item-comment">💬 ${item.comentario}</div>` : ''}
+        ${item.comentario?`<div class="item-comment">💬 ${item.comentario}</div>`:''}
       </div>
       <div class="item-actions">
-        ${item.done ? `<div class="done-badge">✓ ${fmtDate(item.doneDate)}</div>` : ''}
-        <button class="del-btn" onclick="editItem(${item.id})" title="Editar">✏️</button>
-        <button class="del-btn" onclick="deleteItem(${item.id})" title="Eliminar">🗑</button>
+        ${item.done?`<div class="done-badge">✓ ${fmtDate(item.doneDate)}</div>`:''}
+        <button class="del-btn" onclick="editItem('${item._id}')" title="Editar">✏️</button>
+        <button class="del-btn" onclick="deleteItem('${item._id}')" title="Eliminar">🗑</button>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
-function toggleDone(id) {
-  const item = items.find(i=>i.id===id);
-  if (!item) return;
-  item.done = !item.done;
-  item.doneDate = item.done ? todayStr() : null;
-  save(); render();
-}
-function deleteItem(id) {
+
+window.toggleDone = async id => {
+  const item = items.find(i=>i._id===id); if(!item) return;
+  setSyncDot('syncing');
+  await updateDoc(doc(db,'faltantes',id), { done:!item.done, doneDate:!item.done?todayStr():null });
+};
+window.deleteItem = async id => {
   if (!confirm('¿Eliminar este artículo?')) return;
-  items = items.filter(i=>i.id!==id);
-  save(); render();
-}
-function switchTab(tab, el) {
+  setSyncDot('syncing');
+  await deleteDoc(doc(db,'faltantes',id));
+};
+window.switchTab = (tab, el) => {
   currentTab = tab;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   render();
-}
-function openModal() {
+};
+window.onFilterInput = val => {
+  filterPedido = val;
+  document.getElementById('filterClear').style.display = val ? 'inline-block' : 'none';
+  document.getElementById('filterBadge').style.display = val ? 'inline-block' : 'none';
+  document.getElementById('filterBadge').textContent = val ? `pedido: ${val}` : '';
+  render();
+};
+window.setFilter = p => { document.getElementById('filterInput').value=p; onFilterInput(p); };
+window.clearFilter = () => { document.getElementById('filterInput').value=''; onFilterInput(''); };
+
+window.openModal = () => {
   editId = null;
   document.getElementById('modalTitle').textContent = '// NUEVO ARTÍCULO';
-  document.getElementById('fFecha').value = todayStr();
-  document.getElementById('fCodigo').value = '';
-  document.getElementById('fArticulo').value = '';
-  document.getElementById('fProveedor').value = '';
-  document.getElementById('fComentario').value = '';
+  ['fFecha','fCodigo','fArticulo','fProveedor','fPedidos','fComentario'].forEach(id => {
+    document.getElementById(id).value = id==='fFecha' ? todayStr() : '';
+  });
   document.getElementById('modalOverlay').classList.add('show');
-}
-function editItem(id) {
-  const item = items.find(i=>i.id===id);
-  if (!item) return;
+};
+window.editItem = id => {
+  const item = items.find(i=>i._id===id); if(!item) return;
   editId = id;
   document.getElementById('modalTitle').textContent = '// EDITAR ARTÍCULO';
-  document.getElementById('fFecha').value = item.fecha || '';
-  document.getElementById('fCodigo').value = item.codigo || '';
-  document.getElementById('fArticulo').value = item.articulo || '';
-  document.getElementById('fProveedor').value = item.proveedor || '';
-  document.getElementById('fComentario').value = item.comentario || '';
+  document.getElementById('fFecha').value = item.fecha||'';
+  document.getElementById('fCodigo').value = item.codigo||'';
+  document.getElementById('fArticulo').value = item.articulo||'';
+  document.getElementById('fProveedor').value = item.proveedor||'';
+  document.getElementById('fPedidos').value = item.pedidos||'';
+  document.getElementById('fComentario').value = item.comentario||'';
   document.getElementById('modalOverlay').classList.add('show');
-}
-function closeModal(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
-}
-function closeModalDirect() {
-  document.getElementById('modalOverlay').classList.remove('show');
-}
-function saveItem() {
+};
+window.closeModal = e => { if(e.target===document.getElementById('modalOverlay')) closeModalDirect(); };
+window.closeModalDirect = () => document.getElementById('modalOverlay').classList.remove('show');
+
+window.saveItem = async () => {
   const articulo = document.getElementById('fArticulo').value.trim();
   if (!articulo) { document.getElementById('fArticulo').focus(); return; }
+  const btn = document.getElementById('saveBtn');
+  btn.textContent='Guardando...'; btn.disabled=true;
   const data = {
     fecha: document.getElementById('fFecha').value,
     codigo: document.getElementById('fCodigo').value.trim(),
     articulo,
     proveedor: document.getElementById('fProveedor').value.trim(),
+    pedidos: document.getElementById('fPedidos').value.trim(),
     comentario: document.getElementById('fComentario').value.trim(),
   };
-  if (editId) {
-    const item = items.find(i=>i.id===editId);
-    if (item) Object.assign(item, data);
-  } else {
-    items.push({ id: nextId++, ...data, done: false, doneDate: null });
-  }
-  save(); render(); closeModalDirect();
-}
+  setSyncDot('syncing');
+  try {
+    if (editId) { await updateDoc(doc(db,'faltantes',editId), data); }
+    else { await addDoc(collection(db,'faltantes'), {...data, done:false, doneDate:null, createdAt:serverTimestamp()}); }
+    closeModalDirect();
+  } catch(e) { alert('Error al guardar: '+e.message); }
+  btn.textContent='Guardar artículo'; btn.disabled=false;
+};
 
-load(); render();
+// Auto-connect if config saved
+const saved = localStorage.getItem('fb_cfg');
+if (saved) {
+  try {
+    const {apiKey, projectId} = JSON.parse(saved);
+    const app = initializeApp({apiKey, projectId, authDomain:`${projectId}.firebaseapp.com`});
+    startApp(getFirestore(app));
+  } catch(e) {}
+}
 </script>
 </body>
 </html>
