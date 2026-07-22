@@ -540,7 +540,7 @@ function daysBetween(a, b) {
   return Math.round((new Date(b+'T00:00:00') - new Date(a+'T00:00:00')) / 86400000);
 }
 
-function renderIndicadores() {
+window.renderIndicadores = function renderIndicadores() {
   const done  = items.filter(i => i.done);
   const pend  = items.filter(i => !i.done);
   const withDates = done.filter(i => i.fecha && i.fechaSalida && i.doneDate);
