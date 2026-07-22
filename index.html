@@ -286,14 +286,27 @@
       <div class="kpi-grid" id="kpiGrid"></div>
       <!-- Chart: por proveedor -->
       <div class="chart-section">
-        <div class="chart-title">Cumplimiento por Proveedor</div>
-        <div class="chart-sub">Artículos resueltos a tiempo vs. fuera de término por proveedor</div>
-        <div class="bar-chart" id="chartProveedor"></div>
-        <div class="bar-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#86efac"></div>A tiempo</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#fca5a5"></div>Fuera de término</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0"></div>Pendiente</div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px;">
+          <div>
+            <div class="chart-title">Cumplimiento por Proveedor</div>
+            <div class="chart-sub" style="margin-bottom:0">Artículos resueltos a tiempo vs. fuera de término vs. pendientes</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <label style="font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Filtrar:</label>
+            <select id="provFilter" onchange="renderIndicadores()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;">
+              <option value="">Todos los proveedores</option>
+            </select>
+          </div>
         </div>
+        <div style="margin-bottom:14px;">
+          <div class="bar-legend" style="margin-top:10px;">
+            <div class="legend-item"><div class="legend-dot" style="background:#86efac"></div><strong>Verde</strong> = resuelto dentro del plazo comprometido</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#fca5a5"></div><strong>Rojo</strong> = resuelto fuera del plazo comprometido</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0"></div><strong>Gris</strong> = aún pendiente de resolución</div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px;font-family:'DM Mono',monospace;">Contador al final: <span style="color:var(--accent)">N ✓</span> a tiempo · <span style="color:var(--red)">N ✗</span> tarde · <span style="color:var(--text2)">N ⧖</span> pendientes · <span style="color:var(--orange)">~Nd</span> demora promedio</div>
+        </div>
+        <div class="bar-chart" id="chartProveedor"></div>
       </div>
       <!-- Chart: por artículo -->
       <div class="chart-section">
@@ -310,12 +323,6 @@
           <div class="legend-item"><div class="legend-dot" style="background:#86efac"></div>Resueltos</div>
           <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0"></div>Pendientes</div>
         </div>
-      </div>
-      <!-- Chart: pedidos más afectados -->
-      <div class="chart-section">
-        <div class="chart-title">Pedidos más Afectados</div>
-        <div class="chart-sub">Pedidos con mayor cantidad de faltantes asociados</div>
-        <div class="bar-chart" id="chartPedidos"></div>
       </div>
     </div>
   </div>
@@ -579,30 +586,48 @@ function renderIndicadores() {
   const provMap = {};
   items.forEach(item => {
     const p = item.proveedor || '(sin proveedor)';
-    if (!provMap[p]) provMap[p] = {ok:0, late:0, pend:0};
+    if (!provMap[p]) provMap[p] = {ok:0, late:0, pend:0, lateDays:[]};
     if (!item.done) { provMap[p].pend++; return; }
     const ot = isOnTime(item);
     if (ot === true)  provMap[p].ok++;
-    else if (ot === false) provMap[p].late++;
-    else provMap[p].ok++; // resolved but no date → count as neutral (ok bucket)
+    else if (ot === false) {
+      provMap[p].late++;
+      const d = daysBetween(item.fechaSalida, item.doneDate);
+      if (d !== null) provMap[p].lateDays.push(d);
+    } else provMap[p].ok++;
   });
-  const provEntries = Object.entries(provMap).sort((a,b) => (b[1].ok+b[1].late+b[1].pend)-(a[1].ok+a[1].late+a[1].pend));
+
+  // populate filter select
+  const sel = document.getElementById('provFilter');
+  const selectedProv = sel ? sel.value : '';
+  const allProvs = Object.keys(provMap).sort();
+  if (sel) {
+    sel.innerHTML = '<option value="">Todos los proveedores</option>' +
+      allProvs.map(p => `<option value="${p}"${p===selectedProv?' selected':''}>${p}</option>`).join('');
+  }
+
+  let provEntries = Object.entries(provMap).sort((a,b) => (b[1].ok+b[1].late+b[1].pend)-(a[1].ok+a[1].late+a[1].pend));
+  if (selectedProv) provEntries = provEntries.filter(([name]) => name === selectedProv);
+
   if (!provEntries.length) {
-    document.getElementById('chartProveedor').innerHTML = '<div class="no-data-msg">Sin datos aún.</div>';
+    document.getElementById('chartProveedor').innerHTML = '<div class="no-data-msg">Sin datos para el proveedor seleccionado.</div>';
   } else {
+    const maxTotal = Math.max(...provEntries.map(([,v])=>v.ok+v.late+v.pend), 1);
     document.getElementById('chartProveedor').innerHTML = provEntries.map(([name, v]) => {
       const total = v.ok + v.late + v.pend;
-      const pOk   = total ? (v.ok/total*100).toFixed(1) : 0;
-      const pLate = total ? (v.late/total*100).toFixed(1) : 0;
-      const pPend = total ? (v.pend/total*100).toFixed(1) : 0;
+      const pOk   = total ? (v.ok/maxTotal*100).toFixed(1) : 0;
+      const pLate = total ? (v.late/maxTotal*100).toFixed(1) : 0;
+      const pPend = total ? (v.pend/maxTotal*100).toFixed(1) : 0;
+      const avgLate = v.lateDays.length ? Math.round(v.lateDays.reduce((a,b)=>a+b,0)/v.lateDays.length) : null;
+      const avgStr  = avgLate !== null ? `<span style="color:var(--orange);margin-left:4px">~${avgLate}d</span>` : '';
       return `<div class="bar-row">
         <div class="bar-name" title="${name}">${name}</div>
         <div class="bar-track">
           <div class="bar-seg ok"   style="width:${pOk}%"  title="${v.ok} a tiempo"></div>
-          <div class="bar-seg late" style="width:${pLate}%" title="${v.late} tarde"></div>
-          <div class="bar-seg pend" style="width:${pPend}%" title="${v.pend} pendiente"></div>
+          <div class="bar-seg late" style="width:${pLate}%" title="${v.late} fuera de término"></div>
+          <div class="bar-seg pend" style="width:${pPend}%" title="${v.pend} pendientes"></div>
         </div>
-        <div class="bar-count">${v.ok}✓ ${v.late}✗ ${v.pend}⏳</div>
+        <div class="bar-count" style="width:auto;min-width:100px"><span style="color:var(--accent)">${v.ok}✓</span> <span style="color:var(--red)">${v.late}✗</span> <span style="color:var(--text2)">${v.pend}⧖</span>${avgStr}</div>
       </div>`;
     }).join('');
   }
@@ -662,33 +687,6 @@ function renderIndicadores() {
     }).join('');
   }
 
-  // ── CHART: PEDIDOS MÁS AFECTADOS ──
-  const pedMap = {};
-  items.forEach(item => {
-    (item.pedidos||'').split(',').map(s=>s.trim()).filter(Boolean).forEach(p => {
-      if (!pedMap[p]) pedMap[p] = {total:0, done:0};
-      pedMap[p].total++;
-      if (item.done) pedMap[p].done++;
-    });
-  });
-  const pedEntries = Object.entries(pedMap).sort((a,b)=>b[1].total-a[1].total).slice(0,12);
-  if (!pedEntries.length) {
-    document.getElementById('chartPedidos').innerHTML = '<div class="no-data-msg">Sin pedidos registrados aún.</div>';
-  } else {
-    const maxPed = Math.max(...pedEntries.map(([,v])=>v.total), 1);
-    document.getElementById('chartPedidos').innerHTML = pedEntries.map(([ped, v]) => {
-      const pDone = (v.done/maxPed*100).toFixed(1);
-      const pPend = ((v.total-v.done)/maxPed*100).toFixed(1);
-      return `<div class="bar-row">
-        <div class="bar-name">Pedido ${ped}</div>
-        <div class="bar-track">
-          <div class="bar-seg ok"   style="width:${pDone}%"></div>
-          <div class="bar-seg pend" style="width:${pPend}%"></div>
-        </div>
-        <div class="bar-count">${v.done}/${v.total}</div>
-      </div>`;
-    }).join('');
-  }
 }
 window.onSearch = val => {
   searchQuery = val;
