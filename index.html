@@ -586,15 +586,15 @@ window.renderIndicadores = function renderIndicadores() {
   const provMap = {};
   items.forEach(item => {
     const p = item.proveedor || '(sin proveedor)';
-    if (!provMap[p]) provMap[p] = {ok:0, late:0, pend:0, lateDays:[]};
-    if (!item.done) { provMap[p].pend++; return; }
+    if (!provMap[p]) provMap[p] = {ok:0, late:0, pend:0, allDiffs:[], items:[]};
+    if (!item.done) { provMap[p].pend++; provMap[p].items.push(item); return; }
     const ot = isOnTime(item);
     if (ot === true)  provMap[p].ok++;
-    else if (ot === false) {
-      provMap[p].late++;
-      const d = daysBetween(item.fechaSalida, item.doneDate);
-      if (d !== null) provMap[p].lateDays.push(d);
-    } else provMap[p].ok++;
+    else if (ot === false) provMap[p].late++;
+    else provMap[p].ok++;
+    const diff = daysBetween(item.fechaSalida, item.doneDate);
+    if (diff !== null) provMap[p].allDiffs.push(diff);
+    provMap[p].items.push(item);
   });
 
   // populate filter select
@@ -612,24 +612,81 @@ window.renderIndicadores = function renderIndicadores() {
   if (!provEntries.length) {
     document.getElementById('chartProveedor').innerHTML = '<div class="no-data-msg">Sin datos para el proveedor seleccionado.</div>';
   } else {
-    const maxTotal = Math.max(...provEntries.map(([,v])=>v.ok+v.late+v.pend), 1);
-    document.getElementById('chartProveedor').innerHTML = provEntries.map(([name, v]) => {
-      const total = v.ok + v.late + v.pend;
-      const pOk   = total ? (v.ok/maxTotal*100).toFixed(1) : 0;
-      const pLate = total ? (v.late/maxTotal*100).toFixed(1) : 0;
-      const pPend = total ? (v.pend/maxTotal*100).toFixed(1) : 0;
-      const avgLate = v.lateDays.length ? Math.round(v.lateDays.reduce((a,b)=>a+b,0)/v.lateDays.length) : null;
-      const avgStr  = avgLate !== null ? `<span style="color:var(--orange);margin-left:4px">~${avgLate}d</span>` : '';
-      return `<div class="bar-row">
-        <div class="bar-name" title="${name}">${name}</div>
-        <div class="bar-track">
-          <div class="bar-seg ok"   style="width:${pOk}%"  title="${v.ok} a tiempo"></div>
-          <div class="bar-seg late" style="width:${pLate}%" title="${v.late} fuera de término"></div>
-          <div class="bar-seg pend" style="width:${pPend}%" title="${v.pend} pendientes"></div>
-        </div>
-        <div class="bar-count" style="width:auto;min-width:100px"><span style="color:var(--accent)">${v.ok}✓</span> <span style="color:var(--red)">${v.late}✗</span> <span style="color:var(--text2)">${v.pend}⧖</span>${avgStr}</div>
+    // when a single provider is selected → show item-level detail
+    if (selectedProv) {
+      const [name, v] = provEntries[0];
+      const resolvedWithDiff = v.items.filter(i => i.done && i.fechaSalida && i.doneDate);
+      const avgDiff = v.allDiffs.length ? Math.round(v.allDiffs.reduce((a,b)=>a+b,0)/v.allDiffs.length) : null;
+      const avgColor = avgDiff === null ? 'var(--muted)' : avgDiff <= 0 ? 'var(--accent)' : 'var(--red)';
+      const avgSign  = avgDiff === null ? '—' : avgDiff <= 0 ? `−${Math.abs(avgDiff)} días promedio (antes)` : `+${avgDiff} días promedio (tarde)`;
+
+      // scale: max abs diff for bar width
+      const maxAbs = Math.max(...v.allDiffs.map(Math.abs), 1);
+
+      let html = '';
+
+      if (resolvedWithDiff.length) {
+        const sorted = [...resolvedWithDiff].sort((a,b) => {
+          const da = daysBetween(a.fechaSalida, a.doneDate) ?? 0;
+          const db_ = daysBetween(b.fechaSalida, b.doneDate) ?? 0;
+          return db_ - da;
+        });
+        html += sorted.map(item => {
+          const diff = daysBetween(item.fechaSalida, item.doneDate);
+          const isLate = diff > 0;
+          const color = diff <= 0 ? '#86efac' : '#fca5a5';
+          const textColor = diff <= 0 ? 'var(--accent)' : 'var(--red)';
+          const label = diff === 0 ? '0 días (exacto)' : diff < 0 ? `−${Math.abs(diff)} días` : `+${diff} días`;
+          const barW = Math.min(Math.abs(diff)/maxAbs*100, 100).toFixed(1);
+          return `<div class="bar-row" style="margin-bottom:2px">
+            <div class="bar-name" title="${item.articulo}" style="width:200px">${item.articulo||'—'}</div>
+            <div class="bar-track" style="background:var(--bg2)">
+              <div class="bar-seg" style="width:${barW}%;background:${color}"></div>
+            </div>
+            <div class="bar-count" style="width:110px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;color:${textColor};font-weight:500">${label}</div>
+          </div>`;
+        }).join('');
+      }
+
+      if (v.pend > 0) {
+        html += `<div style="font-size:12px;color:var(--muted);margin-top:10px;font-style:italic">${v.pend} artículo${v.pend>1?'s':''} pendiente${v.pend>1?'s':''} (sin fecha de resolución aún)</div>`;
+      }
+
+      if (!resolvedWithDiff.length) {
+        html += '<div class="no-data-msg">Sin artículos resueltos con fechas completas para calcular demora.</div>';
+      }
+
+      html += `<div style="margin-top:16px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;gap:10px">
+        <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Promedio ${name}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:20px;font-weight:600;color:${avgColor}">${avgSign}</span>
       </div>`;
-    }).join('');
+
+      document.getElementById('chartProveedor').innerHTML = html;
+
+    } else {
+      // summary view: all providers, bar + counter + avg
+      const maxTotal = Math.max(...provEntries.map(([,v])=>v.ok+v.late+v.pend), 1);
+      document.getElementById('chartProveedor').innerHTML = provEntries.map(([name, v]) => {
+        const total = v.ok + v.late + v.pend;
+        const pOk   = total ? (v.ok/maxTotal*100).toFixed(1) : 0;
+        const pLate = total ? (v.late/maxTotal*100).toFixed(1) : 0;
+        const pPend = total ? (v.pend/maxTotal*100).toFixed(1) : 0;
+        const avgDiff = v.allDiffs.length ? Math.round(v.allDiffs.reduce((a,b)=>a+b,0)/v.allDiffs.length) : null;
+        const avgColor = avgDiff === null ? 'var(--muted)' : avgDiff <= 0 ? 'var(--accent)' : 'var(--red)';
+        const avgStr = avgDiff !== null
+          ? `<span style="color:${avgColor};margin-left:6px;font-weight:500">${avgDiff<=0?'−'+Math.abs(avgDiff):'+'+avgDiff}d</span>`
+          : '';
+        return `<div class="bar-row">
+          <div class="bar-name" title="${name}">${name}</div>
+          <div class="bar-track">
+            <div class="bar-seg ok"   style="width:${pOk}%"  title="${v.ok} a tiempo"></div>
+            <div class="bar-seg late" style="width:${pLate}%" title="${v.late} fuera de término"></div>
+            <div class="bar-seg pend" style="width:${pPend}%" title="${v.pend} pendientes"></div>
+          </div>
+          <div class="bar-count" style="width:auto;min-width:120px"><span style="color:var(--accent)">${v.ok}✓</span> <span style="color:var(--red)">${v.late}✗</span> <span style="color:var(--text2)">${v.pend}⧖</span>${avgStr}</div>
+        </div>`;
+      }).join('');
+    }
   }
 
   // ── CHART: POR ARTÍCULO (resueltos con fechas) ──
