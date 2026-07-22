@@ -181,6 +181,46 @@
     header, .content { padding-left: 14px; padding-right: 14px; }
     .item { padding: 12px; gap: 10px; }
   }
+
+  /* ── INDICADORES ── */
+  #indicadoresPanel { display: none; }
+  .ind-content { padding: 24px 20px; max-width: 1000px; margin: 0 auto; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; box-shadow: var(--shadow); }
+  .kpi-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+  .kpi-val { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 500; line-height: 1; color: var(--text); }
+  .kpi-val.green { color: var(--accent); }
+  .kpi-val.red   { color: var(--red); }
+  .kpi-val.orange{ color: var(--orange); }
+  .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 5px; }
+  .chart-section { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  .chart-title { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text); font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .chart-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  .bar-chart { display: flex; flex-direction: column; gap: 10px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; }
+  .bar-name { font-size: 12px; color: var(--text2); width: 160px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Sans', sans-serif; }
+  .bar-track { flex: 1; height: 28px; background: var(--bg2); border-radius: 6px; overflow: hidden; display: flex; position: relative; }
+  .bar-seg { height: 100%; transition: width 0.5s ease; min-width: 0; }
+  .bar-seg.ok   { background: #86efac; }
+  .bar-seg.late { background: #fca5a5; }
+  .bar-seg.pend { background: #e2e8f0; }
+  .bar-count { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); width: 60px; flex-shrink: 0; text-align: right; }
+  .bar-legend { display: flex; gap: 16px; margin-top: 14px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .scatter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+  .scatter-cell { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .scatter-cell.on-time  { border-color: #86efac; background: #f0fdf4; }
+  .scatter-cell.late-c   { border-color: #fca5a5; background: #fef2f2; }
+  .scatter-cell.no-date  { border-color: var(--border); }
+  .scatter-name { font-size: 11px; color: var(--text2); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .scatter-days { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; }
+  .scatter-days.pos { color: var(--accent); }
+  .scatter-days.neg { color: var(--red); }
+  .scatter-label { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .ind-empty { text-align: center; padding: 48px 20px; color: var(--muted); font-size: 13px; }
+  .ind-empty .icon { font-size: 32px; margin-bottom: 8px; }
+  .no-data-msg { color: var(--muted); font-size: 12px; font-style: italic; padding: 12px 0; }
 </style>
 </head>
 <body>
@@ -229,13 +269,55 @@
         <button class="tab active" onclick="switchTab('pending',this)">Pendientes</button>
         <button class="tab" onclick="switchTab('done',this)">Finalizados</button>
         <button class="tab" onclick="switchTab('all',this)">Todos</button>
+        <button class="tab" id="tabIndicadores" onclick="switchTab('indicadores',this)">📊 Indicadores</button>
       </div>
     </div>
   </header>
 
-  <div class="content">
+  <div class="content" id="mainContent">
     <div id="resultsInfo" class="results-info"></div>
     <div class="item-list" id="itemList"></div>
+  </div>
+
+  <!-- INDICADORES PANEL -->
+  <div id="indicadoresPanel">
+    <div class="ind-content">
+      <!-- KPIs -->
+      <div class="kpi-grid" id="kpiGrid"></div>
+      <!-- Chart: por proveedor -->
+      <div class="chart-section">
+        <div class="chart-title">Cumplimiento por Proveedor</div>
+        <div class="chart-sub">Artículos resueltos a tiempo vs. fuera de término por proveedor</div>
+        <div class="bar-chart" id="chartProveedor"></div>
+        <div class="bar-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#86efac"></div>A tiempo</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#fca5a5"></div>Fuera de término</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0"></div>Pendiente</div>
+        </div>
+      </div>
+      <!-- Chart: por artículo -->
+      <div class="chart-section">
+        <div class="chart-title">Tiempo de Resolución por Artículo</div>
+        <div class="chart-sub">Días entre ingreso y resolución. Verde = dentro del plazo, Rojo = demorado</div>
+        <div class="scatter-grid" id="chartArticulo"></div>
+      </div>
+      <!-- Chart: evolución mensual -->
+      <div class="chart-section">
+        <div class="chart-title">Ingresos por Mes</div>
+        <div class="chart-sub">Cantidad de faltantes registrados y resueltos por mes</div>
+        <div class="bar-chart" id="chartMensual"></div>
+        <div class="bar-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#86efac"></div>Resueltos</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0"></div>Pendientes</div>
+        </div>
+      </div>
+      <!-- Chart: pedidos más afectados -->
+      <div class="chart-section">
+        <div class="chart-title">Pedidos más Afectados</div>
+        <div class="chart-sub">Pedidos con mayor cantidad de faltantes asociados</div>
+        <div class="bar-chart" id="chartPedidos"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -437,8 +519,177 @@ window.deleteItem = async id => {
 window.switchTab = (tab, el) => {
   currentTab = tab;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active'); render();
+  el.classList.add('active');
+  const isInd = tab === 'indicadores';
+  document.getElementById('mainContent').style.display   = isInd ? 'none' : 'block';
+  document.getElementById('indicadoresPanel').style.display = isInd ? 'block' : 'none';
+  document.getElementById('searchInput').closest('.search-bar').style.display = isInd ? 'none' : 'flex';
+  if (isInd) renderIndicadores(); else render();
 };
+
+// ── INDICADORES ──
+function daysBetween(a, b) {
+  if (!a || !b) return null;
+  return Math.round((new Date(b+'T00:00:00') - new Date(a+'T00:00:00')) / 86400000);
+}
+
+function renderIndicadores() {
+  const done  = items.filter(i => i.done);
+  const pend  = items.filter(i => !i.done);
+  const withDates = done.filter(i => i.fecha && i.fechaSalida && i.doneDate);
+
+  // classify resolved: on time = doneDate <= fechaSalida
+  function isOnTime(item) {
+    if (!item.fechaSalida || !item.doneDate) return null;
+    return item.doneDate <= item.fechaSalida;
+  }
+  const onTime = withDates.filter(i => isOnTime(i) === true).length;
+  const late   = withDates.filter(i => isOnTime(i) === false).length;
+  const pct    = withDates.length ? Math.round(onTime / withDates.length * 100) : null;
+
+  // avg resolution days
+  const resDays = withDates.map(i => daysBetween(i.fecha, i.doneDate)).filter(d=>d!==null);
+  const avgDays = resDays.length ? Math.round(resDays.reduce((a,b)=>a+b,0)/resDays.length) : null;
+
+  // ── KPIs ──
+  document.getElementById('kpiGrid').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-label">Total registrados</div>
+      <div class="kpi-val">${items.length}</div>
+      <div class="kpi-sub">${done.length} resueltos · ${pend.length} pendientes</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">A tiempo</div>
+      <div class="kpi-val green">${pct !== null ? pct+'%' : '—'}</div>
+      <div class="kpi-sub">${onTime} de ${withDates.length} con fechas completas</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Fuera de término</div>
+      <div class="kpi-val red">${late}</div>
+      <div class="kpi-sub">${withDates.length ? Math.round(late/withDates.length*100) : 0}% del total resuelto</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Tiempo promedio</div>
+      <div class="kpi-val orange">${avgDays !== null ? avgDays+'d' : '—'}</div>
+      <div class="kpi-sub">días ingreso → resolución</div>
+    </div>
+  `;
+
+  // ── CHART: POR PROVEEDOR ──
+  const provMap = {};
+  items.forEach(item => {
+    const p = item.proveedor || '(sin proveedor)';
+    if (!provMap[p]) provMap[p] = {ok:0, late:0, pend:0};
+    if (!item.done) { provMap[p].pend++; return; }
+    const ot = isOnTime(item);
+    if (ot === true)  provMap[p].ok++;
+    else if (ot === false) provMap[p].late++;
+    else provMap[p].ok++; // resolved but no date → count as neutral (ok bucket)
+  });
+  const provEntries = Object.entries(provMap).sort((a,b) => (b[1].ok+b[1].late+b[1].pend)-(a[1].ok+a[1].late+a[1].pend));
+  if (!provEntries.length) {
+    document.getElementById('chartProveedor').innerHTML = '<div class="no-data-msg">Sin datos aún.</div>';
+  } else {
+    document.getElementById('chartProveedor').innerHTML = provEntries.map(([name, v]) => {
+      const total = v.ok + v.late + v.pend;
+      const pOk   = total ? (v.ok/total*100).toFixed(1) : 0;
+      const pLate = total ? (v.late/total*100).toFixed(1) : 0;
+      const pPend = total ? (v.pend/total*100).toFixed(1) : 0;
+      return `<div class="bar-row">
+        <div class="bar-name" title="${name}">${name}</div>
+        <div class="bar-track">
+          <div class="bar-seg ok"   style="width:${pOk}%"  title="${v.ok} a tiempo"></div>
+          <div class="bar-seg late" style="width:${pLate}%" title="${v.late} tarde"></div>
+          <div class="bar-seg pend" style="width:${pPend}%" title="${v.pend} pendiente"></div>
+        </div>
+        <div class="bar-count">${v.ok}✓ ${v.late}✗ ${v.pend}⏳</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── CHART: POR ARTÍCULO (resueltos con fechas) ──
+  if (!withDates.length) {
+    document.getElementById('chartArticulo').innerHTML = '<div class="no-data-msg">Sin artículos resueltos con fechas completas.</div>';
+  } else {
+    const sorted = [...withDates].sort((a,b) => {
+      const da = daysBetween(a.fechaSalida, a.doneDate) ?? 0;
+      const db_ = daysBetween(b.fechaSalida, b.doneDate) ?? 0;
+      return db_ - da; // most delayed first
+    });
+    document.getElementById('chartArticulo').innerHTML = sorted.map(item => {
+      const planned = daysBetween(item.fecha, item.fechaSalida);
+      const actual  = daysBetween(item.fecha, item.doneDate);
+      const diff    = daysBetween(item.fechaSalida, item.doneDate); // positive = late
+      const cls = diff === null ? 'no-date' : diff <= 0 ? 'on-time' : 'late-c';
+      const sign = diff === null ? '—' : diff <= 0 ? `+${Math.abs(diff)}d antes` : `${diff}d tarde`;
+      const valCls = diff === null ? '' : diff <= 0 ? 'pos' : 'neg';
+      return `<div class="scatter-cell ${cls}">
+        <div class="scatter-name" title="${item.articulo}">${item.articulo||'—'}</div>
+        <div class="scatter-days ${valCls}">${actual !== null ? actual+'d' : '—'}</div>
+        <div class="scatter-label">${sign}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── CHART: MENSUAL ──
+  const monthMap = {};
+  items.forEach(item => {
+    if (!item.fecha) return;
+    const key = item.fecha.slice(0,7); // YYYY-MM
+    if (!monthMap[key]) monthMap[key] = {total:0, done:0};
+    monthMap[key].total++;
+    if (item.done) monthMap[key].done++;
+  });
+  const monthEntries = Object.entries(monthMap).sort((a,b)=>a[0].localeCompare(b[0]));
+  if (!monthEntries.length) {
+    document.getElementById('chartMensual').innerHTML = '<div class="no-data-msg">Sin datos aún.</div>';
+  } else {
+    const maxTotal = Math.max(...monthEntries.map(([,v])=>v.total), 1);
+    document.getElementById('chartMensual').innerHTML = monthEntries.map(([key, v]) => {
+      const [y,m] = key.split('-');
+      const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      const label = `${months[parseInt(m)-1]} ${y}`;
+      const pDone = (v.done/maxTotal*100).toFixed(1);
+      const pPend = ((v.total-v.done)/maxTotal*100).toFixed(1);
+      return `<div class="bar-row">
+        <div class="bar-name">${label}</div>
+        <div class="bar-track">
+          <div class="bar-seg ok"   style="width:${pDone}%" title="${v.done} resueltos"></div>
+          <div class="bar-seg pend" style="width:${pPend}%" title="${v.total-v.done} pendientes"></div>
+        </div>
+        <div class="bar-count">${v.done}/${v.total}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── CHART: PEDIDOS MÁS AFECTADOS ──
+  const pedMap = {};
+  items.forEach(item => {
+    (item.pedidos||'').split(',').map(s=>s.trim()).filter(Boolean).forEach(p => {
+      if (!pedMap[p]) pedMap[p] = {total:0, done:0};
+      pedMap[p].total++;
+      if (item.done) pedMap[p].done++;
+    });
+  });
+  const pedEntries = Object.entries(pedMap).sort((a,b)=>b[1].total-a[1].total).slice(0,12);
+  if (!pedEntries.length) {
+    document.getElementById('chartPedidos').innerHTML = '<div class="no-data-msg">Sin pedidos registrados aún.</div>';
+  } else {
+    const maxPed = Math.max(...pedEntries.map(([,v])=>v.total), 1);
+    document.getElementById('chartPedidos').innerHTML = pedEntries.map(([ped, v]) => {
+      const pDone = (v.done/maxPed*100).toFixed(1);
+      const pPend = ((v.total-v.done)/maxPed*100).toFixed(1);
+      return `<div class="bar-row">
+        <div class="bar-name">Pedido ${ped}</div>
+        <div class="bar-track">
+          <div class="bar-seg ok"   style="width:${pDone}%"></div>
+          <div class="bar-seg pend" style="width:${pPend}%"></div>
+        </div>
+        <div class="bar-count">${v.done}/${v.total}</div>
+      </div>`;
+    }).join('');
+  }
+}
 window.onSearch = val => {
   searchQuery = val;
   const clear = document.getElementById('searchClear');
@@ -507,7 +758,8 @@ function startApp(firebaseDb) {
   setSyncDot('syncing');
   onSnapshot(collection(db,'faltantes'), snap => {
     items = snap.docs.map(d=>({_id:d.id,...d.data()}));
-    setSyncDot('ok'); render();
+    setSyncDot('ok');
+    if (currentTab === 'indicadores') renderIndicadores(); else render();
   }, () => setSyncDot(''));
 }
 
