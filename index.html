@@ -538,21 +538,47 @@ function daysBetween(a, b) {
 }
 
 window.renderIndicadores = function renderIndicadores() {
-  const done  = items.filter(i => i.done);
-  const pend  = items.filter(i => !i.done);
-  const withDates = done.filter(i => i.fecha && i.fechaSalida && i.doneDate);
+  // Helper: effective fechaSalida — if missing, use fecha + 21d; for done items without fechaSalida, treat as on time with 15d resolution
+  function effectiveSalida(item) {
+    if (item.fechaSalida) return item.fechaSalida;
+    if (item.fecha) {
+      const d = new Date(item.fecha + 'T00:00:00');
+      d.setDate(d.getDate() + 21);
+      return d.toISOString().slice(0,10);
+    }
+    return null;
+  }
 
-  // classify resolved: on time = doneDate <= fechaSalida
+  // classify resolved: on time = doneDate <= fechaSalida (or no fechaSalida → always on time)
   function isOnTime(item) {
-    if (!item.fechaSalida || !item.doneDate) return null;
+    if (!item.doneDate) return null;
+    if (!item.fechaSalida) return true; // sin fecha comprometida → a tiempo por defecto
     return item.doneDate <= item.fechaSalida;
   }
+
+  // effective diff for stats: if no fechaSalida, use 15d as proxy resolution time
+  function effectiveDiff(item) {
+    if (!item.done || !item.doneDate) return null;
+    const salida = item.fechaSalida || (() => {
+      // no fechaSalida: report as 15 days (neutral/on-time proxy)
+      return item.doneDate; // diff = 0 (exacto)
+    })();
+    return daysBetween(salida, item.doneDate);
+  }
+
+  const done  = items.filter(i => i.done);
+  const pend  = items.filter(i => !i.done);
+  // "withDates" for KPIs: all resolved items (use fallback for missing dates)
+  const withDates = done.filter(i => i.doneDate);
   const onTime = withDates.filter(i => isOnTime(i) === true).length;
   const late   = withDates.filter(i => isOnTime(i) === false).length;
   const pct    = withDates.length ? Math.round(onTime / withDates.length * 100) : null;
 
-  // avg resolution days
-  const resDays = withDates.map(i => daysBetween(i.fecha, i.doneDate)).filter(d=>d!==null);
+  // avg resolution days (fecha ingreso → doneDate), fallback 15d if no fecha
+  const resDays = withDates.map(i => {
+    if (i.fecha && i.doneDate) return daysBetween(i.fecha, i.doneDate);
+    return 15; // proxy
+  }).filter(d=>d!==null);
   const avgDays = resDays.length ? Math.round(resDays.reduce((a,b)=>a+b,0)/resDays.length) : null;
 
   // ── KPIs ──
@@ -589,7 +615,7 @@ window.renderIndicadores = function renderIndicadores() {
     if (ot === true)  provMap[p].ok++;
     else if (ot === false) provMap[p].late++;
     else provMap[p].ok++;
-    const diff = daysBetween(item.fechaSalida, item.doneDate);
+    const diff = item.fechaSalida ? daysBetween(item.fechaSalida, item.doneDate) : 0; // no fecha → 0 (a tiempo)
     if (diff !== null) provMap[p].allDiffs.push(diff);
     provMap[p].items.push(item);
   });
@@ -612,7 +638,7 @@ window.renderIndicadores = function renderIndicadores() {
     // when a single provider is selected → show item-level detail
     if (selectedProv) {
       const [name, v] = provEntries[0];
-      const resolvedWithDiff = v.items.filter(i => i.done && i.fechaSalida && i.doneDate);
+      const resolvedWithDiff = v.items.filter(i => i.done && i.doneDate);
       const avgDiff = v.allDiffs.length ? Math.round(v.allDiffs.reduce((a,b)=>a+b,0)/v.allDiffs.length) : null;
       const avgColor = avgDiff === null ? 'var(--muted)' : avgDiff <= 0 ? 'var(--accent)' : 'var(--red)';
       const avgSign  = avgDiff === null ? '—' : avgDiff <= 0 ? `−${Math.abs(avgDiff)} días promedio (antes)` : `+${avgDiff} días promedio (tarde)`;
@@ -629,18 +655,18 @@ window.renderIndicadores = function renderIndicadores() {
           return db_ - da;
         });
         html += sorted.map(item => {
-          const diff = daysBetween(item.fechaSalida, item.doneDate);
-          const isLate = diff > 0;
-          const color = diff <= 0 ? '#86efac' : '#fca5a5';
-          const textColor = diff <= 0 ? 'var(--accent)' : 'var(--red)';
-          const label = diff === 0 ? '0 días (exacto)' : diff < 0 ? `−${Math.abs(diff)} días` : `+${diff} días`;
-          const barW = Math.min(Math.abs(diff)/maxAbs*100, 100).toFixed(1);
+          const diff = item.fechaSalida ? daysBetween(item.fechaSalida, item.doneDate) : null;
+          const noDate = diff === null;
+          const color = noDate ? '#C8C5BC' : diff <= 0 ? '#FFCC03' : '#C0392B';
+          const textColor = noDate ? 'var(--muted)' : diff <= 0 ? '#27ae60' : '#C0392B';
+          const label = noDate ? 'sin fecha comprometida (a tiempo)' : diff === 0 ? '0 días (exacto)' : diff < 0 ? `−${Math.abs(diff)} días` : `+${diff} días`;
+          const barW = noDate ? 10 : Math.min(Math.abs(diff)/maxAbs*100, 100).toFixed(1);
           return `<div class="bar-row" style="margin-bottom:2px">
             <div class="bar-name" title="${item.articulo}" style="width:200px">${item.articulo||'—'}</div>
             <div class="bar-track" style="background:var(--bg2)">
               <div class="bar-seg" style="width:${barW}%;background:${color}"></div>
             </div>
-            <div class="bar-count" style="width:110px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;color:${textColor};font-weight:500">${label}</div>
+            <div class="bar-count" style="width:auto;min-width:160px;text-align:right;font-family:'Ubuntu',sans-serif;font-size:12px;color:${textColor};font-weight:${noDate?'400':'700'}">${label}</div>
           </div>`;
         }).join('');
       }
@@ -753,8 +779,12 @@ window.openModal = () => {
   editId = null;
   document.getElementById('modalTitle').textContent = '// NUEVO ARTÍCULO';
   ['fCodigo','fArticulo','fProveedor','fPedidos','fComentario'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('fFecha').value = todayStr();
-  document.getElementById('fFechaSalida').value = '';
+  const today = todayStr();
+  document.getElementById('fFecha').value = today;
+  // default: fecha de salida = hoy + 21 días
+  const d = new Date(today + 'T00:00:00');
+  d.setDate(d.getDate() + 21);
+  document.getElementById('fFechaSalida').value = d.toISOString().slice(0,10);
   document.getElementById('modalOverlay').classList.add('show');
 };
 window.editItem = id => {
