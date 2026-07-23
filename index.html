@@ -4,91 +4,98 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Faltantes</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f5f4f0;
-    --bg2: #eceae4;
-    --surface: #ffffff;
-    --surface2: #f8f7f4;
-    --border: #e0ddd6;
-    --border2: #ccc9c0;
-    --accent: #1a6b3c;
-    --accent-light: #e8f5ee;
-    --accent2: #b45309;
-    --accent2-light: #fef3e2;
-    --text: #1c1a16;
-    --text2: #5a5650;
-    --muted: #9a9590;
-    --done-bg: #f9f8f6;
-    --done-text: #b0aca5;
-    --red: #dc2626;
-    --red-light: #fef2f2;
+    /* ── Giuliani brand tokens ── */
+    --giuliani-amarillo: #FFCC03;
+    --giuliani-gris-claro: #79786D;
+    --giuliani-gris-oscuro: #504639;
+    --giuliani-fondo: #F5F4F2;
+
+    --bg: #F5F4F2;
+    --bg2: #ECEAE6;
+    --surface: #FFFFFF;
+    --surface2: #F9F8F6;
+    --border: #E2E0DA;
+    --border2: #C8C5BC;
+    --accent: #FFCC03;
+    --accent-dark: #504639;
+    --accent-light: #FFF9D6;
+    --accent2: #79786D;
+    --accent2-light: #F0EFEB;
+    --text: #504639;
+    --text2: #79786D;
+    --muted: #A8A59E;
+    --done-bg: #F9F8F6;
+    --done-text: #C0BDB6;
+    --red: #C0392B;
+    --red-light: #FDF2F2;
     --blue: #1d4ed8;
     --blue-light: #eff6ff;
-    --orange: #ea580c;
-    --orange-light: #fff7ed;
-    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+    --orange: #C0392B;
+    --orange-light: #FDF2F2;
+    --shadow: 0 1px 3px rgba(80,70,57,0.07), 0 1px 2px rgba(80,70,57,0.04);
+    --shadow-md: 0 4px 12px rgba(80,70,57,0.1), 0 2px 4px rgba(80,70,57,0.05);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding-bottom: 60px; }
+  body { background: var(--bg); color: var(--text); font-family: 'Ubuntu', -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; padding-bottom: 60px; }
 
   /* ── SETUP ── */
   #setupScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 32px 20px; background: var(--bg); }
-  .setup-logo { font-family: 'DM Mono', monospace; font-size: 26px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
-  .setup-logo span { color: var(--accent); }
+  .setup-logo { font-family: 'Ubuntu', sans-serif; font-size: 26px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .setup-logo span { color: var(--giuliani-amarillo); }
   .setup-sub { color: var(--muted); font-size: 13px; margin-bottom: 36px; }
   .setup-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px 26px; width: 100%; max-width: 540px; box-shadow: var(--shadow-md); }
-  .setup-card h2 { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); margin-bottom: 22px; letter-spacing: 1.5px; text-transform: uppercase; }
+  .setup-card h2 { font-family: 'Ubuntu', sans-serif; font-size: 11px; font-weight: 700; color: var(--text2); margin-bottom: 22px; letter-spacing: 1.5px; text-transform: uppercase; }
   .setup-step { display: flex; gap: 14px; margin-bottom: 16px; align-items: flex-start; }
-  .step-num { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: #fff; background: var(--accent); width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .step-num { font-family: 'Ubuntu', sans-serif; font-size: 11px; font-weight: 700; color: var(--text); background: var(--giuliani-amarillo); width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
   .step-text { font-size: 13px; line-height: 1.65; color: var(--text2); }
-  .step-text a { color: var(--accent); text-decoration: none; font-weight: 500; }
-  .step-text a:hover { text-decoration: underline; }
-  .step-text code { font-family: 'DM Mono', monospace; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 3px; font-size: 11px; color: var(--accent2); word-break: break-all; }
+  .step-text a { color: var(--text); text-decoration: underline; font-weight: 500; }
+  .step-text a:hover { color: var(--text2); }
+  .step-text code { font-family: monospace; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 3px; font-size: 11px; color: var(--text2); word-break: break-all; }
   .setup-divider { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
   .setup-input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-  .setup-label { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-  .setup-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 13px; font-family: 'DM Mono', monospace; outline: none; transition: border-color 0.15s, box-shadow 0.15s; width: 100%; }
-  .setup-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,107,60,0.1); }
+  .setup-label { font-size: 11px; font-family: 'Ubuntu', sans-serif; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .setup-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 13px; font-family: monospace; outline: none; transition: border-color 0.15s, box-shadow 0.15s; width: 100%; }
+  .setup-input:focus { border-color: var(--giuliani-amarillo); box-shadow: 0 0 0 3px rgba(255,204,3,0.2); }
   .setup-input::placeholder { color: var(--muted); }
-  .setup-btn { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 10px; transition: background 0.15s, transform 0.1s; }
-  .setup-btn:hover { background: #155c32; transform: translateY(-1px); }
+  .setup-btn { width: 100%; padding: 12px; background: var(--giuliani-gris-oscuro); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; font-family: 'Ubuntu', sans-serif; cursor: pointer; margin-top: 10px; transition: background 0.15s, transform 0.1s; }
+  .setup-btn:hover { background: #3a3328; transform: translateY(-1px); }
   .setup-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
-  .setup-error { color: var(--red); font-size: 12px; margin-top: 8px; display: none; background: var(--red-light); border: 1px solid #fca5a5; padding: 8px 12px; border-radius: 6px; }
+  .setup-error { color: var(--red); font-size: 12px; margin-top: 8px; display: none; background: var(--red-light); border: 1px solid #f5a5a5; padding: 8px 12px; border-radius: 6px; }
 
   /* ── HEADER ── */
   #app { display: none; }
   header { padding: 16px 20px 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface); z-index: 100; box-shadow: var(--shadow); }
   .header-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-bottom: 14px; }
-  .logo { font-family: 'DM Mono', monospace; font-size: 17px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 8px; }
-  .logo-mark { color: var(--accent); }
-  .sync-pill { display: flex; align-items: center; gap: 5px; font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); padding: 3px 8px; border-radius: 20px; }
+  .logo { font-family: 'Ubuntu', sans-serif; font-size: 17px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; letter-spacing: -0.3px; }
+  .logo-mark { color: var(--giuliani-amarillo); }
+  .sync-pill { display: flex; align-items: center; gap: 5px; font-size: 11px; font-family: 'Ubuntu', sans-serif; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); padding: 3px 8px; border-radius: 20px; }
   .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); transition: background 0.3s; }
-  .sync-dot.ok { background: var(--accent); }
-  .sync-dot.syncing { background: var(--orange); animation: pulse 1s infinite; }
+  .sync-dot.ok { background: #27ae60; }
+  .sync-dot.syncing { background: var(--giuliani-amarillo); animation: pulse 1s infinite; }
   @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
   .header-right { display: flex; align-items: center; gap: 10px; }
-  .counter { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text2); background: var(--accent-light); border: 1px solid #c6e8d4; padding: 4px 10px; border-radius: 6px; }
-  .counter b { color: var(--accent); }
-  .add-btn { padding: 8px 18px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background 0.15s, transform 0.1s; box-shadow: 0 1px 3px rgba(26,107,60,0.3); }
-  .add-btn:hover { background: #155c32; transform: translateY(-1px); }
+  .counter { font-family: 'Ubuntu', sans-serif; font-size: 12px; font-weight: 500; color: var(--text2); background: var(--accent-light); border: 1px solid #EDD800; padding: 4px 10px; border-radius: 6px; }
+  .counter b { color: var(--text); }
+  .add-btn { padding: 8px 18px; background: var(--giuliani-amarillo); color: var(--text); border: none; border-radius: 8px; font-size: 13px; font-weight: 700; font-family: 'Ubuntu', sans-serif; cursor: pointer; transition: background 0.15s, transform 0.1s; box-shadow: 0 1px 3px rgba(255,204,3,0.4); }
+  .add-btn:hover { background: #EDD800; transform: translateY(-1px); }
 
   /* ── SEARCH BAR ── */
   .search-bar { padding: 10px 0 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 380px; }
   .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; pointer-events: none; }
-  .search-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 7px 12px 7px 32px; border-radius: 8px; font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
-  .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,107,60,0.08); }
+  .search-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 7px 12px 7px 32px; border-radius: 8px; font-size: 13px; font-family: 'Ubuntu', sans-serif; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+  .search-input:focus { border-color: var(--giuliani-amarillo); box-shadow: 0 0 0 3px rgba(255,204,3,0.15); }
   .search-input::placeholder { color: var(--muted); }
   .search-clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: var(--border); border: none; color: var(--text2); width: 18px; height: 18px; border-radius: 50%; font-size: 10px; cursor: pointer; display: none; align-items: center; justify-content: center; }
   .search-clear.show { display: flex; }
-  .filter-badge { font-family: 'DM Mono', monospace; font-size: 11px; background: var(--accent-light); border: 1px solid #c6e8d4; color: var(--accent); padding: 4px 10px; border-radius: 20px; display: none; white-space: nowrap; }
+  .filter-badge { font-family: 'Ubuntu', sans-serif; font-size: 11px; font-weight: 500; background: var(--accent-light); border: 1px solid #EDD800; color: var(--text); padding: 4px 10px; border-radius: 20px; display: none; white-space: nowrap; }
   .tabs { display: flex; gap: 2px; padding-top: 10px; }
-  .tab { padding: 8px 16px; font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--muted); border-bottom: 2px solid transparent; transition: all 0.15s; margin-bottom: -1px; }
+  .tab { padding: 8px 16px; font-size: 13px; font-family: 'Ubuntu', sans-serif; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--muted); border-bottom: 2px solid transparent; transition: all 0.15s; margin-bottom: -1px; }
   .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab.active { color: var(--text); border-bottom-color: var(--giuliani-amarillo); }
 
   /* ── CONTENT ── */
   .content { padding: 20px; max-width: 1000px; margin: 0 auto; }
@@ -115,8 +122,8 @@
   .item.soon { border-left: 3px solid var(--orange); }
 
   .check-btn { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border2); background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; transition: all 0.2s; color: transparent; font-size: 11px; }
-  .check-btn:hover { border-color: var(--accent); background: var(--accent-light); }
-  .item.done .check-btn { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .check-btn:hover { border-color: var(--giuliani-amarillo); background: var(--accent-light); }
+  .item.done .check-btn { border-color: var(--giuliani-gris-oscuro); background: var(--giuliani-gris-oscuro); color: #fff; }
 
   .item-art { font-size: 14px; font-weight: 500; line-height: 1.35; margin-bottom: 8px; color: var(--text); }
   .item.done .item-art { text-decoration: line-through; color: var(--done-text); }
@@ -152,27 +159,27 @@
   .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 20px 20px 0 0; padding: 24px 22px 36px; width: 100%; max-width: 640px; animation: slideUp 0.25s ease; max-height: 92vh; overflow-y: auto; box-shadow: 0 -8px 32px rgba(0,0,0,0.12); }
   @keyframes slideUp { from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1} }
   .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-  .modal-title { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--text); }
+  .modal-title { font-family: 'Ubuntu', sans-serif; font-size: 14px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.5px; }
   .modal-close { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); width: 28px; height: 28px; border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-  .modal-close:hover { background: var(--red-light); color: var(--red); border-color: #fca5a5; }
+  .modal-close:hover { background: var(--red-light); color: var(--red); border-color: #f5a5a5; }
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
   .form-group { display: flex; flex-direction: column; gap: 5px; }
   .form-group.full { grid-column: 1 / -1; }
-  label { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  label { font-size: 11px; font-family: 'Ubuntu', sans-serif; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
   input[type=text], input[type=date], textarea {
     background: var(--surface2); border: 1px solid var(--border); color: var(--text);
     padding: 9px 12px; border-radius: 8px; font-size: 14px;
-    font-family: 'DM Sans', sans-serif; outline: none;
+    font-family: 'Ubuntu', sans-serif; outline: none;
     transition: border-color 0.15s, box-shadow 0.15s; width: 100%;
   }
-  input[type=text]:focus, input[type=date]:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,107,60,0.1); }
+  input[type=text]:focus, input[type=date]:focus, textarea:focus { border-color: var(--giuliani-amarillo); box-shadow: 0 0 0 3px rgba(255,204,3,0.15); }
   textarea { resize: vertical; min-height: 65px; }
   .field-hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
   .form-actions { display: flex; gap: 10px; margin-top: 20px; }
-  .btn-primary { flex: 1; padding: 11px; background: var(--accent); color: #fff; border: none; border-radius: 9px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background 0.15s; }
-  .btn-primary:hover { background: #155c32; }
+  .btn-primary { flex: 1; padding: 11px; background: var(--giuliani-amarillo); color: var(--text); border: none; border-radius: 9px; font-size: 14px; font-weight: 700; font-family: 'Ubuntu', sans-serif; cursor: pointer; transition: background 0.15s; }
+  .btn-primary:hover { background: #EDD800; }
   .btn-primary:disabled { opacity: 0.5; cursor: default; }
-  .btn-cancel { padding: 11px 20px; background: var(--surface2); color: var(--text2); border: 1px solid var(--border); border-radius: 9px; font-size: 14px; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background 0.15s; }
+  .btn-cancel { padding: 11px 20px; background: var(--surface2); color: var(--text2); border: 1px solid var(--border); border-radius: 9px; font-size: 14px; font-family: 'Ubuntu', sans-serif; cursor: pointer; transition: background 0.15s; }
   .btn-cancel:hover { background: var(--bg2); }
 
   @media (max-width: 520px) {
@@ -187,23 +194,23 @@
   .ind-content { padding: 24px 20px; max-width: 1000px; margin: 0 auto; }
   .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 28px; }
   .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; box-shadow: var(--shadow); }
-  .kpi-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
-  .kpi-val { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 500; line-height: 1; color: var(--text); }
-  .kpi-val.green { color: var(--accent); }
+  .kpi-label { font-family: 'Ubuntu', sans-serif; font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+  .kpi-val { font-family: 'Ubuntu', sans-serif; font-size: 32px; font-weight: 700; line-height: 1; color: var(--text); }
+  .kpi-val.green { color: #27ae60; }
   .kpi-val.red   { color: var(--red); }
-  .kpi-val.orange{ color: var(--orange); }
+  .kpi-val.orange{ color: var(--giuliani-gris-oscuro); }
   .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 5px; }
   .chart-section { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; margin-bottom: 16px; box-shadow: var(--shadow); }
-  .chart-title { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text); font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .chart-title { font-family: 'Ubuntu', sans-serif; font-size: 12px; color: var(--text); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
   .chart-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
   .bar-chart { display: flex; flex-direction: column; gap: 10px; }
   .bar-row { display: flex; align-items: center; gap: 10px; }
   .bar-name { font-size: 12px; color: var(--text2); width: 160px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Sans', sans-serif; }
   .bar-track { flex: 1; height: 28px; background: var(--bg2); border-radius: 6px; overflow: hidden; display: flex; position: relative; }
   .bar-seg { height: 100%; transition: width 0.5s ease; min-width: 0; }
-  .bar-seg.ok   { background: #86efac; }
-  .bar-seg.late { background: #fca5a5; }
-  .bar-seg.pend { background: #e2e8f0; }
+  .bar-seg.ok   { background: #FFCC03; }
+  .bar-seg.late { background: #C0392B; opacity: 0.75; }
+  .bar-seg.pend { background: #C8C5BC; }
   .bar-count { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); width: 60px; flex-shrink: 0; text-align: right; }
   .bar-legend { display: flex; gap: 16px; margin-top: 14px; flex-wrap: wrap; }
   .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
@@ -300,29 +307,19 @@
         </div>
         <div style="margin-bottom:14px;">
           <div class="bar-legend" style="margin-top:10px;">
-            <div class="legend-item"><div class="legend-dot" style="background:#86efac"></div><strong>Verde</strong> = resuelto dentro del plazo comprometido</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#fca5a5"></div><strong>Rojo</strong> = resuelto fuera del plazo comprometido</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0"></div><strong>Gris</strong> = aún pendiente de resolución</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#FFCC03"></div><strong>Amarillo</strong> = resuelto dentro del plazo comprometido</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#C0392B;opacity:0.75"></div><strong>Rojo</strong> = resuelto fuera del plazo comprometido</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#C8C5BC"></div><strong>Gris</strong> = aún pendiente de resolución</div>
           </div>
-          <div style="font-size:11px;color:var(--muted);margin-top:8px;font-family:'DM Mono',monospace;">Contador al final: <span style="color:var(--accent)">N ✓</span> a tiempo · <span style="color:var(--red)">N ✗</span> tarde · <span style="color:var(--text2)">N ⧖</span> pendientes · <span style="color:var(--orange)">~Nd</span> demora promedio</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px;font-family:'Ubuntu',sans-serif;">Contador al final: <span style="color:#27ae60">N ✓</span> a tiempo · <span style="color:var(--red)">N ✗</span> tarde · <span style="color:var(--text2)">N ⧖</span> pendientes · promedio en días</div>
         </div>
         <div class="bar-chart" id="chartProveedor"></div>
       </div>
-      <!-- Chart: por artículo -->
-      <div class="chart-section">
-        <div class="chart-title">Tiempo de Resolución por Artículo</div>
-        <div class="chart-sub">Días entre ingreso y resolución. Verde = dentro del plazo, Rojo = demorado</div>
-        <div class="scatter-grid" id="chartArticulo"></div>
-      </div>
       <!-- Chart: evolución mensual -->
       <div class="chart-section">
-        <div class="chart-title">Ingresos por Mes</div>
-        <div class="chart-sub">Cantidad de faltantes registrados y resueltos por mes</div>
-        <div class="bar-chart" id="chartMensual"></div>
-        <div class="bar-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#86efac"></div>Resueltos</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0"></div>Pendientes</div>
-        </div>
+        <div class="chart-title">Resumen por Mes</div>
+        <div class="chart-sub">Faltantes registrados, resueltos, en proceso y atraso promedio por mes</div>
+        <div id="chartMensual"></div>
       </div>
     </div>
   </div>
@@ -689,59 +686,53 @@ window.renderIndicadores = function renderIndicadores() {
     }
   }
 
-  // ── CHART: POR ARTÍCULO (resueltos con fechas) ──
-  if (!withDates.length) {
-    document.getElementById('chartArticulo').innerHTML = '<div class="no-data-msg">Sin artículos resueltos con fechas completas.</div>';
-  } else {
-    const sorted = [...withDates].sort((a,b) => {
-      const da = daysBetween(a.fechaSalida, a.doneDate) ?? 0;
-      const db_ = daysBetween(b.fechaSalida, b.doneDate) ?? 0;
-      return db_ - da; // most delayed first
-    });
-    document.getElementById('chartArticulo').innerHTML = sorted.map(item => {
-      const planned = daysBetween(item.fecha, item.fechaSalida);
-      const actual  = daysBetween(item.fecha, item.doneDate);
-      const diff    = daysBetween(item.fechaSalida, item.doneDate); // positive = late
-      const cls = diff === null ? 'no-date' : diff <= 0 ? 'on-time' : 'late-c';
-      const sign = diff === null ? '—' : diff <= 0 ? `+${Math.abs(diff)}d antes` : `${diff}d tarde`;
-      const valCls = diff === null ? '' : diff <= 0 ? 'pos' : 'neg';
-      return `<div class="scatter-cell ${cls}">
-        <div class="scatter-name" title="${item.articulo}">${item.articulo||'—'}</div>
-        <div class="scatter-days ${valCls}">${actual !== null ? actual+'d' : '—'}</div>
-        <div class="scatter-label">${sign}</div>
-      </div>`;
-    }).join('');
-  }
-
-  // ── CHART: MENSUAL ──
+  // ── CHART: MENSUAL (tarjetas detalladas) ──
   const monthMap = {};
   items.forEach(item => {
     if (!item.fecha) return;
-    const key = item.fecha.slice(0,7); // YYYY-MM
-    if (!monthMap[key]) monthMap[key] = {total:0, done:0};
+    const key = item.fecha.slice(0,7);
+    if (!monthMap[key]) monthMap[key] = {total:0, done:0, diffs:[]};
     monthMap[key].total++;
-    if (item.done) monthMap[key].done++;
+    if (item.done) {
+      monthMap[key].done++;
+      const d = daysBetween(item.fechaSalida, item.doneDate);
+      if (d !== null) monthMap[key].diffs.push(d);
+    }
   });
   const monthEntries = Object.entries(monthMap).sort((a,b)=>a[0].localeCompare(b[0]));
+  const MONTHS_ES = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
   if (!monthEntries.length) {
     document.getElementById('chartMensual').innerHTML = '<div class="no-data-msg">Sin datos aún.</div>';
   } else {
-    const maxTotal = Math.max(...monthEntries.map(([,v])=>v.total), 1);
-    document.getElementById('chartMensual').innerHTML = monthEntries.map(([key, v]) => {
-      const [y,m] = key.split('-');
-      const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-      const label = `${months[parseInt(m)-1]} ${y}`;
-      const pDone = (v.done/maxTotal*100).toFixed(1);
-      const pPend = ((v.total-v.done)/maxTotal*100).toFixed(1);
-      return `<div class="bar-row">
-        <div class="bar-name">${label}</div>
-        <div class="bar-track">
-          <div class="bar-seg ok"   style="width:${pDone}%" title="${v.done} resueltos"></div>
-          <div class="bar-seg pend" style="width:${pPend}%" title="${v.total-v.done} pendientes"></div>
-        </div>
-        <div class="bar-count">${v.done}/${v.total}</div>
+    document.getElementById('chartMensual').innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+        ${monthEntries.map(([key, v]) => {
+          const [y,m] = key.split('-');
+          const label = `${MONTHS_ES[parseInt(m)-1]} ${y}`;
+          const pend = v.total - v.done;
+          const avgDiff = v.diffs.length ? Math.round(v.diffs.reduce((a,b)=>a+b,0)/v.diffs.length) : null;
+          const atrasoColor = avgDiff === null ? 'var(--muted)' : avgDiff <= 0 ? '#27ae60' : '#C0392B';
+          const atrasoText = avgDiff === null ? 'sin datos' : avgDiff === 0 ? 'exacto' : avgDiff < 0 ? `${Math.abs(avgDiff)} días antes` : `${avgDiff} días de atraso`;
+          const pctDone = v.total ? Math.round(v.done/v.total*100) : 0;
+          return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)">
+            <div style="font-family:'Ubuntu',sans-serif;font-size:13px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:12px;text-transform:uppercase">${label}</div>
+            <div style="font-family:'Ubuntu',sans-serif;font-size:28px;font-weight:700;color:var(--text);line-height:1">${v.total}</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:14px">faltantes registrados</div>
+            <div style="display:flex;gap:0;margin-bottom:10px">
+              <div style="flex:${v.done};background:var(--giuliani-amarillo);height:6px;border-radius:3px 0 0 3px;min-width:${v.done?'4px':'0'}"></div>
+              <div style="flex:${pend};background:var(--border2);height:6px;border-radius:0 3px 3px 0;min-width:${pend?'4px':'0'}"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:12px">
+              <span><b style="color:var(--text)">${v.done}</b> <span style="color:var(--muted)">resueltos</span></span>
+              <span><b style="color:var(--text)">${pend}</b> <span style="color:var(--muted)">en proceso</span></span>
+            </div>
+            <div style="border-top:1px solid var(--border);padding-top:10px;font-size:12px">
+              <span style="color:var(--muted)">Atraso promedio: </span>
+              <b style="color:${atrasoColor}">${atrasoText}</b>
+            </div>
+          </div>`;
+        }).join('')}
       </div>`;
-    }).join('');
   }
 
 }
