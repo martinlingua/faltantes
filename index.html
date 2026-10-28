@@ -260,6 +260,7 @@
       </div>
       <div class="header-right">
         <div class="counter"><b id="pendCount">0</b> pendientes</div>
+        <button class="add-btn" style="background:var(--surface2);color:var(--text);border:1px solid var(--border2);box-shadow:none;" onclick="exportarFaltantes()" title="Descarga todo el historial en un archivo para importarlo al sistema de compras">⬇ Exportar historial</button>
         <button class="add-btn" onclick="openModal()">+ Agregar</button>
       </div>
     </div>
@@ -824,6 +825,19 @@ window.saveItem = async () => {
     closeModalDirect();
   } catch(e) { alert('Error al guardar: '+e.message); }
   btn.textContent='Guardar artículo'; btn.disabled=false;
+};
+
+// ── EXPORTAR (para pasar el historial al sistema de compras) ──
+window.exportarFaltantes = () => {
+  const data = items.map(({_id, createdAt, ...r}) => ({
+    _id, ...r,
+    createdAt: createdAt && createdAt.seconds ? new Date(createdAt.seconds*1000).toISOString() : null
+  }));
+  const blob = new Blob([JSON.stringify(data, null, 1)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'faltantes_historial_' + todayStr() + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
 };
 
 // ── INIT ──
